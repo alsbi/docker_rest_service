@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 __author__ = 'alsbi'
-from command import Command
+from .command import Command
 
 Api = Command()
 

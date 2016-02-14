@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 __author__ = 'alsbi'
+
 import json
 from functools import wraps
 
 import requests_unixsocket
 
-from transport import Transport
+from .transport import Transport
 
 
 # decorator
@@ -13,10 +14,11 @@ def get_error(func):
     @wraps(func)
     def work(self, *args, **kwargs):
         err, ret = func(self, *args, **kwargs)
-        if err == 500:
-            print ret
+        # TODO error except
+        # if err == 500 or err == 404:
+        if err != 200:
             raise ValueError
-        return ret
+        return json.loads(ret)
 
     return work
 

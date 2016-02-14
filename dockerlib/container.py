@@ -2,7 +2,7 @@
 __author__ = 'alsbi'
 import json
 
-from utils import Api
+from .utils import Api
 
 
 class Container(object):
@@ -14,13 +14,13 @@ class Container(object):
         if data:
             self.json = data.strip()
         else:
-            for opt, value in json.loads(Api.show_container(self.uid)).iteritems():
+            for opt, value in Api.show_container(self.uid).iteritems():
                 setattr(self, opt, value)
             self.json = json.dumps(self.__atr(), indent = 4)
 
     def create(self):
         if self.uid is None:
-            ret = json.loads(Api.create_container(self.json))
+            ret = Api.create_container(self.json)
             self.uid = ret['Id']
         self.__parse()
         return self.uid
@@ -47,6 +47,9 @@ class Container(object):
         pass
 
     def __repr__(self):
+        return json.dumps(self.json)
+
+    def __str__(self):
         return self.json
 
     def __atr(self):
