@@ -4,7 +4,7 @@ __author__ = 'alsbi'
 from abc import ABCMeta, abstractmethod
 
 
-class Base_service:
+class BaseService:
     __metaclass__ = ABCMeta
 
     @abstractmethod
@@ -18,6 +18,10 @@ class Base_service:
 
     @abstractmethod
     def info(self):
+        pass
+
+    @abstractmethod
+    def create_container(self, data):
         pass
 
     @abstractmethod

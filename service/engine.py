@@ -2,12 +2,14 @@
 __author__ = 'alsbi'
 import json
 
-from dockerlib import Base_container, Base_service
+from dockerlib import BaseContainer, BaseService
+from .logger import Loger
 
 
-class Base(Base_service):
+class Docker(BaseService):
     def __init__(self, version, transport, api, container):
-        super(Base, self).__init__(version = version, transport = transport, api = api, container = container)
+        super(Docker, self).__init__(version = version, transport = transport, api = api, container = container)
+        self.logger = Loger()
 
     def info(self):
         return self.api.info()
@@ -23,6 +25,9 @@ class Base(Base_service):
     def start_container(self, uid):
         return self.container(self.api, uid = uid).start()
 
+    def create_container(self, data):
+        return self.container(data).create()
+
     def stop_container(self, uid):
         return self.container(self.api, uid = uid).stop()
 
@@ -37,20 +42,22 @@ class Base(Base_service):
         return self.api.show_images_history(images)
 
 
-class Container(Base_container):
+class DockerContainer(BaseContainer):
     def __init__(self, api, uid=None, data=None):
         self.api = api
         self.uid = uid
         self.__parse(data)
+        self.logger = Loger()
 
     def __parse(self, data=None):
         if data:
             self.json = data.strip()
             self.uid = json.loads(self.json)['Id']
         else:
-            for opt, value in self.api.show_container(self.uid).iteritems():
+            data = self.api.show_container(self.uid)
+            for opt, value in data.iteritems():
                 setattr(self, opt, value)
-            self.json = json.dumps(self.__atr(), indent = 4)
+            self.json = json.dumps(data, indent = 4)
 
     def create(self):
         if self.uid is None:

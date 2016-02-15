@@ -2,7 +2,7 @@
 __author__ = 'alsbi'
 
 
-def template(hostname='', domainname='', images=''):
+def template(hostname='', domainname='', images='', cmd=''):
     return """
 {{
        "Hostname": "{hostname}",
@@ -14,7 +14,7 @@ def template(hostname='', domainname='', images=''):
        "Tty": false,
        "OpenStdin": false,
        "StdinOnce": false,
-       "Cmd":["date"],
+       "Cmd":["{{cmd}}"],
        "Image": "{images}",
        "Volumes": {{
                "/tmp": {{}}
@@ -26,4 +26,4 @@ def template(hostname='', domainname='', images=''):
                "22/tcp": {{}}
        }}
 }}
-""".format(hostname = hostname, domainname = domainname, images = images)
+""".format(hostname = hostname, domainname = domainname, images = images, cmd = cmd)

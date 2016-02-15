@@ -3,7 +3,7 @@ __author__ = 'alsbi'
 from abc import ABCMeta, abstractmethod
 
 
-class Base_container:
+class BaseContainer:
     __metaclass__ = ABCMeta
 
     @abstractmethod

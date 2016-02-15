@@ -1,29 +1,27 @@
 # -*- coding: utf-8 -*-
 __author__ = 'alsbi'
 
-import json
 from functools import wraps
+
+from .errors import *
+
 
 # decorator
 def get_error(func):
     @wraps(func)
     def work(self, *args, **kwargs):
         err, ret = func(self, *args, **kwargs)
-        # TODO error except
-        # if err == 500 or err == 404:
-        if err != 200:
-            raise ValueError
-        return json.loads(ret)
+        if err > 300:
+            raise check_error(error = err)(error = err, message = ret)
+        if ret:
+            return json.loads(ret)
+        else:
+            return {'error': err, 'message': ret}
 
     return work
 
 
 class Api(object):
-    """
-    :param transport:
-    :return json
-    """
-
     def __init__(self, transport):
         self.transport = transport
 
@@ -56,29 +54,29 @@ class Api(object):
         return self.transport.post('/containers/create', data = json.loads(data))
 
     @get_error
-    def show_container(self, id):
-        return self.transport.get('/containers/{id}/json'.format(id = id))
+    def show_container(self, uid):
+        return self.transport.get('/containers/{uid}/json'.format(uid = uid))
 
     @get_error
-    def show_container_opt(self, id, action=None):
-        return self.transport.get('/containers/{id}/{action}'.format(id = id, action = action))
+    def show_container_opt(self, uid, action=None):
+        return self.transport.get('/containers/{uid}/{action}'.format(uid = uid, action = action))
 
     @get_error
-    def delete_container(self, id):
-        return self.transport.delete('/containers/{id}'.format(id = id))
+    def delete_container(self, uid):
+        return self.transport.delete('/containers/{uid}'.format(uid = uid))
 
     @get_error
-    def start_container(self, id):
-        return self.transport.post('/containers/{id}/start'.format(id = id))
+    def start_container(self, uid):
+        return self.transport.post('/containers/{uid}/start'.format(uid = uid))
 
     @get_error
-    def restart_container(self, id, ttl=5):
-        return self.transport.post('/containers/{id}/restart?t={ttl}'.format(id = id, ttl = ttl))
+    def restart_container(self, uid, ttl=5):
+        return self.transport.post('/containers/{uid}/restart?t={ttl}'.format(uid = uid, ttl = ttl))
 
     @get_error
-    def stop_container(self, id):
-        pass
+    def stop_container(self, uid):
+        return self.transport.post('/containers/{uid}/stop'.format(uid = uid))
 
     @get_error
-    def kill_container(self, id):
-        return self.transport.post('/containers/{id}/kill'.format(id = id))
+    def kill_container(self, uid):
+        return self.transport.post('/containers/{uid}/kill'.format(uid = uid))

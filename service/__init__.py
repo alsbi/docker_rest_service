@@ -1,45 +1,74 @@
 # -*- coding: utf-8 -*-
 __author__ = 'alsbi'
+
 import json
 
-from flask import jsonify, Flask
+from flask import jsonify, Flask, request
 
-from dockerlib import Transport, Api
-from .engine import Base, Container
+from dockerlib import Transport, Api, template, ExecutionError, ApiError, BadParameter, NotRunning, NotFound, Conflict
+from .engine import Docker, DockerContainer
 
-app = Flask(__name__)
+APP = Flask(__name__)
 
-CurrentBase = Base(version = '0.1', transport = Transport, api = Api, container = Container)
+CurrentEngine = Docker(version = '0.1',
+                       api = Api,
+                       transport = Transport,
+                       container = DockerContainer)
 
-print(CurrentBase.constract_route('/containers/json'))
 
-@app.route('/')
-@app.route(CurrentBase.constract_route('/info'))
+@APP.route('/')
+@APP.route(CurrentEngine.constract_route('/info'), methods = ['GET'])
 def info():
-    return jsonify(CurrentBase.info())
+    try:
+        return jsonify(CurrentEngine.info())
+    except (ExecutionError, ApiError, BadParameter, NotRunning, NotFound, Conflict) as e:
+        return e, e.error
 
 
-@app.route(CurrentBase.constract_route('/containers/json'))
+@APP.route(CurrentEngine.constract_route('/containers/json'), methods = ['GET'])
 def containers():
-    return json.dumps([i for i in CurrentBase.show_container_all()])
+    try:
+        return json.dumps([container for container in CurrentEngine.show_container_all()])
+    except (ExecutionError, ApiError, BadParameter, NotRunning, NotFound, Conflict) as e:
+        return e, e.error
 
 
-@app.route(CurrentBase.constract_route('/images/json'))
+@APP.route(CurrentEngine.constract_route('/images/json'), methods = ['GET'])
 def images():
-    return json.dumps([i for i in CurrentBase.show_images()])
+    try:
+        return json.dumps([img for img in CurrentEngine.show_images()])
+    except (ExecutionError, ApiError, BadParameter, NotRunning, NotFound, Conflict) as e:
+        return e, e.error
 
 
-@app.route(CurrentBase.constract_route('/containers/<id>'))
-def containers_id(id):
-    return jsonify(CurrentBase.show_container(id))
+@APP.route(CurrentEngine.constract_route('/containers/create'), methods = ['POST'])
+def containers_create():
+    try:
+        if request.method == 'POST':
+            return CurrentEngine.create_container(data = template(**json.loads(request.data)))
+    except (ExecutionError, ApiError, BadParameter, NotRunning, NotFound, Conflict) as e:
+        return e, e.error
 
 
-@app.route(CurrentBase.constract_route('/containers/<id>/<action>'))
-def containers_action(id, action):
-    return getattr(CurrentBase, '{action}_container'.format(action = action))(id)
+@APP.route(CurrentEngine.constract_route('/containers/<uid>'), methods = ['GET'])
+def containers_id(uid):
+    try:
+        return jsonify(CurrentEngine.show_container(uid))
+    except (ExecutionError, ApiError, BadParameter, NotRunning, NotFound, Conflict) as e:
+        return e, e.error
+
+
+@APP.route(CurrentEngine.constract_route('/containers/<uid>/<action>'), methods = ['POST'])
+def containers_action(uid, action):
+    try:
+        return getattr(CurrentEngine, '{action}_container'.format(action = action))(uid = uid)
+    except (ExecutionError, ApiError, BadParameter, NotRunning, NotFound, Conflict) as e:
+        return e, e.error
+    except AttributeError as e:
+        return jsonify({'error': 500, 'message': 'Action "{action}" not found'.format(action = action)}), 500
 
 
 def start():
-    app.run(debug = True,
+    APP.run(debug = True,
             host = '0.0.0.0',
             threaded = True)
