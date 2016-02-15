@@ -3,27 +3,24 @@ __author__ = 'alsbi'
 
 import requests_unixsocket
 
-path = 'socket'
-session = requests_unixsocket.Session()
-server_address = '/var/run/docker.sock'
-
 
 class Transport(object):
-    @staticmethod
-    def get(command):
-        path = 'http+unix://{sock}{command}'.format(sock = server_address.replace('/', '%2F'), command = command)
-        r = session.get(path)
+    def __init__(self, server_address='/var/run/docker.sock'):
+        self.server_address = server_address
+        self.session = requests_unixsocket.Session()
+
+    def get(self, command):
+        path = 'http+unix://{sock}{command}'.format(sock = self.server_address.replace('/', '%2F'), command = command)
+        r = self.session.get(path)
         return r.status_code, r.text
 
-    @staticmethod
-    def post(command, data=None):
+    def post(self, command, data=None):
         headers = {'Content-type': 'application/json'}
-        path = 'http+unix://{sock}{command}'.format(sock = server_address.replace('/', '%2F'), command = command)
-        r = session.post(path, json = data, headers = headers)
+        path = 'http+unix://{sock}{command}'.format(sock = self.server_address.replace('/', '%2F'), command = command)
+        r = self.session.post(path, json = data, headers = headers)
         return r.status_code, r.text
 
-    @staticmethod
-    def delete(command):
-        path = 'http+unix://{sock}{command}'.format(sock = server_address.replace('/', '%2F'), command = command)
-        r = session.delete(path)
+    def delete(self, command):
+        path = 'http+unix://{sock}{command}'.format(sock = self.server_address.replace('/', '%2F'), command = command)
+        r = self.session.delete(path)
         return r.status_code, r.text

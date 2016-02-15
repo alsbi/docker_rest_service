@@ -1,33 +1,42 @@
 # -*- coding: utf-8 -*-
 __author__ = 'alsbi'
+import json
 
-from flask import Flask, jsonify
+from flask import jsonify, Flask
 
-from dockerlib import Base
+from dockerlib import Transport, Api
+from .engine import Base, Container
 
-tmpl_dir = ''
 app = Flask(__name__)
 
+CurrentBase = Base(version = '0.1', transport = Transport, api = Api, container = Container)
+
+print(CurrentBase.constract_route('/containers/json'))
 
 @app.route('/')
-@app.route('/info')
+@app.route(CurrentBase.constract_route('/info'))
 def info():
-    return jsonify(Base.info())
+    return jsonify(CurrentBase.info())
 
 
-@app.route('/containers/json')
+@app.route(CurrentBase.constract_route('/containers/json'))
 def containers():
-    return jsonify(Base.show_container_all())
+    return json.dumps([i for i in CurrentBase.show_container_all()])
 
 
-@app.route('/containers/<id>')
+@app.route(CurrentBase.constract_route('/images/json'))
+def images():
+    return json.dumps([i for i in CurrentBase.show_images()])
+
+
+@app.route(CurrentBase.constract_route('/containers/<id>'))
 def containers_id(id):
-    return jsonify(Base.show_container(id))
+    return jsonify(CurrentBase.show_container(id))
 
 
-@app.route('/containers/<id>/<action>')
+@app.route(CurrentBase.constract_route('/containers/<id>/<action>'))
 def containers_action(id, action):
-    return getattr(Base, '{action}_container'.format(action = action))(id)
+    return getattr(CurrentBase, '{action}_container'.format(action = action))(id)
 
 
 def start():

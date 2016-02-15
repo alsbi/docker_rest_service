@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 __author__ = 'alsbi'
-from .command import Command
-
-Api = Command()
 
 
 def template(hostname='', domainname='', images=''):

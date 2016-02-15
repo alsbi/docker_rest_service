@@ -1,44 +1,49 @@
 # -*- coding: utf-8 -*-
 __author__ = 'alsbi'
 
-import json
-
-from .utils import Api
-from .container import Container
+from abc import ABCMeta, abstractmethod
 
 
-class Base(object):
-    @staticmethod
-    def info():
-        return Api.info()
+class Base_service:
+    __metaclass__ = ABCMeta
 
-    @staticmethod
-    def show_container_all():
-        for container in Api.show_container_all():
-            yield Container(data = json.dumps(container))
+    @abstractmethod
+    def __init__(self, version='0.1', transport=None, api=None, container=None):
+        self.version = version
+        self.container = container
+        self.api = api(transport())
 
-    @staticmethod
-    def start_container(uid):
-        return Container(uid = uid).start()
+    def constract_route(self, route):
+        return '/{version}{route}'.format(version = self.version, route = route)
 
-    @staticmethod
-    def stop_container(uid):
-        return Container(uid = uid).stop()
+    @abstractmethod
+    def info(self):
+        pass
 
-    @staticmethod
-    def show_container(uid):
-        return Container(uid = uid).show()
+    @abstractmethod
+    def show_container_all(self):
+        pass
 
-    @staticmethod
-    def show_container_active():
-        for container in json.loads(Api.show_container_active()):
-            yield Container(data = json.dumps(container))
+    @abstractmethod
+    def start_container(self, uid):
+        pass
 
-    @staticmethod
-    def show_images():
-        for images in Api.show_images():
-            yield images
+    @abstractmethod
+    def stop_container(self, uid):
+        pass
 
-    @staticmethod
-    def show_images_history(images):
-        return Api.show_images_history(images)
+    @abstractmethod
+    def show_container(self, uid):
+        pass
+
+    @abstractmethod
+    def show_container_active(self):
+        pass
+
+    @abstractmethod
+    def show_images(self):
+        pass
+
+    @abstractmethod
+    def show_images_history(self, images):
+        pass
