@@ -67,6 +67,10 @@ function get_container_action(e, id) {
     $.ajax({
         url: '/v0.1/containers/' + id + '/' + e.text,
         type: 'POST',
+        error: function () {
+            console.log("Error in action container " + id + " action " + e.text);
+            alert('Error execute action');
+        },
         success: function (res) {
             $("#info").append(
                 "<p> Status : " + res + "</p>"
@@ -111,6 +115,9 @@ function get_info() {
     $.ajax({
         url: '/v0.1/info',
         type: 'GET',
+        error: function () {
+            console.log("Error in get info")
+        },
         success: function (res) {
             $("#info").append(
                 "<p> System : " + res.OperatingSystem + "</p>" +

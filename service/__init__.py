@@ -27,7 +27,7 @@ def info():
     try:
         return jsonify(CurrentEngine.info())
     except (ExecutionError, ApiError, BadParameter, NotRunning, NotFound, Conflict) as e:
-        return e, e.error
+        return str(e), e.error
 
 
 @APP.route(CurrentEngine.constract_route('/containers/json'), methods = ['GET'])
@@ -35,7 +35,7 @@ def containers():
     try:
         return json.dumps([container for container in CurrentEngine.show_container_all()], indent = 4)
     except (ExecutionError, ApiError, BadParameter, NotRunning, NotFound, Conflict) as e:
-        return e, e.error
+        return str(e), e.error
 
 
 @APP.route(CurrentEngine.constract_route('/images/json'), methods = ['GET'])
@@ -43,7 +43,7 @@ def images():
     try:
         return json.dumps([img for img in CurrentEngine.show_images()])
     except (ExecutionError, ApiError, BadParameter, NotRunning, NotFound, Conflict) as e:
-        return e, e.error
+        return str(e), e.error
 
 
 @APP.route(CurrentEngine.constract_route('/containers/create'), methods = ['POST'])
@@ -52,7 +52,7 @@ def containers_create():
         if request.method == 'POST':
             return jsonify(CurrentEngine.create_container(data = template(**json.loads(request.data))))
     except (ExecutionError, ApiError, BadParameter, NotRunning, NotFound, Conflict) as e:
-        return e, e.error
+        return str(e), e.error
 
 
 @APP.route(CurrentEngine.constract_route('/containers/<uid>'), methods = ['GET'])
@@ -60,7 +60,7 @@ def containers_id(uid):
     try:
         return jsonify(CurrentEngine.show_container(uid))
     except (ExecutionError, ApiError, BadParameter, NotRunning, NotFound, Conflict) as e:
-        return e, e.error
+        return str(e), e.error
 
 
 @APP.route(CurrentEngine.constract_route('/containers/<uid>/<action>'), methods = ['POST'])
@@ -68,8 +68,7 @@ def containers_action(uid, action):
     try:
         return jsonify(getattr(CurrentEngine, '{action}_container'.format(action = action))(uid = uid))
     except (ExecutionError, ApiError, BadParameter, NotRunning, NotFound, Conflict) as e:
-        print e, e.error
-        return e, e.error
+        return str(e), e.error
     except AttributeError as e:
         return jsonify({'error': 500, 'message': 'Action "{action}" not found'.format(action = action)}), 500
 
