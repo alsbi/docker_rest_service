@@ -34,6 +34,9 @@ class Docker(BaseService):
     def show_container(self, uid):
         return self.container(self.api, uid = uid).show()
 
+    def get_log_container(self, uid):
+        return self.container(self.api, uid = uid).show_log()
+
     def show_images(self):
         for images in self.api.show_images():
             yield images
@@ -73,7 +76,8 @@ class DockerContainer(BaseContainer):
         return self.api.show_container_opt(self.uid, action = 'stats')
 
     def show_log(self):
-        return self.api.show_container_opt(self.uid, action = 'log')
+
+        return self.api.show_container_opt(self.uid, action = 'logs?stderr=1&stdout=1&tail=20')
 
     def show_top(self):
         return self.api.show_container_opt(self.uid, action = 'top')

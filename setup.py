@@ -10,3 +10,4 @@ setup(
     author_email = 'feano4ik@gmail.com',
     description = ''
 )
+

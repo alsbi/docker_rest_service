@@ -3,13 +3,14 @@ __author__ = 'alsbi'
 
 import json
 
-from flask import jsonify, Flask, request
+from flask import jsonify, Flask, request, render_template
 
 from dockerlib import Transport, Api, template, ExecutionError, ApiError, BadParameter, NotRunning, NotFound, Conflict
 from .engine import Docker, DockerContainer
 
-APP = Flask(__name__)
+APP = Flask(__name__, static_url_path = '/static')
 
+# /v0.1/info
 CurrentEngine = Docker(version = '0.1',
                        api = Api,
                        transport = Transport,
@@ -17,6 +18,10 @@ CurrentEngine = Docker(version = '0.1',
 
 
 @APP.route('/')
+def index():
+    return render_template('index.html', info_js = "{version}_pager.js".format(version = CurrentEngine.version))
+
+
 @APP.route(CurrentEngine.constract_route('/info'), methods = ['GET'])
 def info():
     try:
@@ -28,7 +33,7 @@ def info():
 @APP.route(CurrentEngine.constract_route('/containers/json'), methods = ['GET'])
 def containers():
     try:
-        return json.dumps([container for container in CurrentEngine.show_container_all()])
+        return json.dumps([container for container in CurrentEngine.show_container_all()], indent = 4)
     except (ExecutionError, ApiError, BadParameter, NotRunning, NotFound, Conflict) as e:
         return e, e.error
 
@@ -45,7 +50,7 @@ def images():
 def containers_create():
     try:
         if request.method == 'POST':
-            return CurrentEngine.create_container(data = template(**json.loads(request.data)))
+            return jsonify(CurrentEngine.create_container(data = template(**json.loads(request.data))))
     except (ExecutionError, ApiError, BadParameter, NotRunning, NotFound, Conflict) as e:
         return e, e.error
 
@@ -61,8 +66,9 @@ def containers_id(uid):
 @APP.route(CurrentEngine.constract_route('/containers/<uid>/<action>'), methods = ['POST'])
 def containers_action(uid, action):
     try:
-        return getattr(CurrentEngine, '{action}_container'.format(action = action))(uid = uid)
+        return jsonify(getattr(CurrentEngine, '{action}_container'.format(action = action))(uid = uid))
     except (ExecutionError, ApiError, BadParameter, NotRunning, NotFound, Conflict) as e:
+        print e, e.error
         return e, e.error
     except AttributeError as e:
         return jsonify({'error': 500, 'message': 'Action "{action}" not found'.format(action = action)}), 500

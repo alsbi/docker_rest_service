@@ -14,7 +14,10 @@ def get_error(func):
         if err > 300:
             raise check_error(error = err)(error = err, message = ret)
         if ret:
-            return json.loads(ret)
+            try:
+                return json.loads(ret)
+            except ValueError:
+                return {'error': err, 'message': ret}
         else:
             return {'error': err, 'message': ret}
 

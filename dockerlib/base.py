@@ -14,7 +14,7 @@ class BaseService:
         self.api = api(transport())
 
     def constract_route(self, route):
-        return '/{version}{route}'.format(version = self.version, route = route)
+        return '/v{version}{route}'.format(version = self.version, route = route)
 
     @abstractmethod
     def info(self):
